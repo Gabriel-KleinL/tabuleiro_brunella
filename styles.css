@@ -1,0 +1,210 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: url('mapa.png') no-repeat center;
+    background-size: cover;
+}
+
+#player {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    border-radius: 50%;
+    top: 45px;
+    left: 45px;
+    display: none;
+}
+
+#controls {
+    text-align: center;
+    margin-top: 10px;
+    display: none;
+}
+
+/* Modal para remapeamento */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal[aria-hidden="false"] {
+    display: flex;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+    margin: 0 0 12px 0;
+    font-size: 20px;
+}
+
+#action-body {
+	margin-bottom: 8px;
+}
+
+.field-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.field-row label {
+    font-weight: bold;
+}
+
+.field-row input {
+    padding: 8px;
+}
+
+.buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #555;
+}
+
+/* Modo remapeamento: apenas o mapa visível */
+.remap-active #player,
+.remap-active #controls {
+    display: none !important;
+}
+
+.remap-active #game-container {
+    cursor: crosshair;
+}
+
+/* Peões de tabuleiro */
+.peao {
+	position: absolute;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 3px solid #ffffff;
+	box-sizing: border-box;
+	transform: translate(-50%, -50%);
+	box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+	z-index: 20;
+}
+
+.remap-active .peao {
+	display: none !important;
+}
+
+/* Scoreboard */
+#scoreboard {
+	position: fixed;
+	top: 12px;
+	right: 12px;
+	background: rgba(255,255,255,0.9);
+	backdrop-filter: blur(3px);
+	border-radius: 10px;
+	box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+	padding: 10px 12px;
+	z-index: 50;
+	min-width: 260px;
+	resize: both;
+	overflow: auto;
+}
+
+#scoreboard.dragging {
+	cursor: move;
+}
+
+#scoreboard .handle {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	height: 24px;
+	cursor: move;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	background: linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0));
+}
+
+.team-row {
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	gap: 10px;
+	align-items: center;
+	padding: 6px 0;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.team-row:last-child {
+	border-bottom: none;
+}
+
+.team-row.active {
+	background: rgba(21,101,192,0.08);
+	border-radius: 6px;
+}
+
+.team-name {
+	font-weight: bold;
+    cursor: pointer;
+}
+
+.pill {
+	background: #f5f5f5;
+	padding: 4px 8px;
+	border-radius: 999px;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.pill.coin { color: #ef6c00; }
+.pill.day { color: #1565c0; }
+
+.remap-active #scoreboard { display: none !important; }
+
+/* Controles do scoreboard */
+.score-controls {
+	margin-top: 8px;
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+.score-controls button {
+	padding: 6px 10px;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+}

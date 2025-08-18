@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Tabuleiro - Aventura no Mar</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="player"></div>
+    </div>
+    <div id="scoreboard" aria-live="polite"></div>
+    <div id="action-modal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <h2 id="action-title">Ação</h2>
+            <div id="action-body"></div>
+            <div class="buttons" id="action-buttons"></div>
+        </div>
+    </div>
+    <div id="team-modal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <h2>Nova Equipe</h2>
+            <div class="field-row">
+                <label for="tm-name">Nome</label>
+                <input id="tm-name" type="text" placeholder="Equipe" />
+            </div>
+            <div class="field-row">
+                <label for="tm-coins">Moedas</label>
+                <input id="tm-coins" type="number" value="5" min="0" />
+            </div>
+            <div class="field-row">
+                <label for="tm-days">Dias</label>
+                <input id="tm-days" type="number" value="1" min="0" />
+            </div>
+            <div class="field-row">
+                <label for="tm-casa">Casa inicial</label>
+                <input id="tm-casa" type="number" min="1" max="37" placeholder="Ex.: 1" />
+            </div>
+            <div class="buttons">
+                <button id="tm-pick">Escolher clicando no mapa</button>
+                <button id="tm-save">Adicionar</button>
+                <button id="tm-cancel">Cancelar</button>
+            </div>
+            <p class="hint">Dica: clique em "Escolher clicando no mapa" e depois em uma marcação numerada.</p>
+        </div>
+    </div>
+    <!-- Fallback embutido das posições para exibição imediata -->
+    <script id="posicoes-embed" type="application/json">[
+  {
+    "id": 1,
+    "xRelativo": 5.195,
+    "yRelativo": 14.097,
+    "nome": "Posição 1"
+  },
+  {
+    "id": 2,
+    "xRelativo": 16.406,
+    "yRelativo": 9.236,
+    "nome": "Posição 2"
+  },
+  {
+    "id": 3,
+    "xRelativo": 26.25,
+    "yRelativo": 14.097,
+    "nome": "Posição 3"
+  },
+  {
+    "id": 4,
+    "xRelativo": 35.41,
+    "yRelativo": 26.979,
+    "nome": "Posição 4"
+  },
+  {
+    "id": 5,
+    "xRelativo": 44.297,
+    "yRelativo": 14.826,
+    "nome": "Posição 5"
+  },
+  {
+    "id": 6,
+    "xRelativo": 54.551,
+    "yRelativo": 19.444,
+    "nome": "Posição 6"
+  },
+  {
+    "id": 7,
+    "xRelativo": 65.352,
+    "yRelativo": 12.882,
+    "nome": "Posição 7"
+  },
+  {
+    "id": 8,
+    "xRelativo": 75.605,
+    "yRelativo": 21.632,
+    "nome": "Posição 8"
+  },
+  {
+    "id": 9,
+    "xRelativo": 85.723,
+    "yRelativo": 12.396,
+    "nome": "Posição 9"
+  },
+  {
+    "id": 10,
+    "xRelativo": 92.148,
+    "yRelativo": 26.979,
+    "nome": "Posição 10"
+  },
+  {
+    "id": 11,
+    "xRelativo": 9.57,
+    "yRelativo": 29.167,
+    "nome": "Posição 11"
+  },
+  {
+    "id": 12,
+    "xRelativo": 19.687,
+    "yRelativo": 35.486,
+    "nome": "Posição 12"
+  },
+  {
+    "id": 13,
+    "xRelativo": 29.668,
+    "yRelativo": 40.833,
+    "nome": "Posição 13"
+  },
+  {
+    "id": 14,
+    "xRelativo": 45.391,
+    "yRelativo": 36.215,
+    "nome": "Posição 14"
+  },
+  {
+    "id": 15,
+    "xRelativo": 60.02,
+    "yRelativo": 35.243,
+    "nome": "Posição 15"
+  },
+  {
+    "id": 16,
+    "xRelativo": 69.59,
+    "yRelativo": 41.562,
+    "nome": "Posição 16"
+  },
+  {
+    "id": 17,
+    "xRelativo": 82.988,
+    "yRelativo": 36.215,
+    "nome": "Posição 17"
+  },
+  {
+    "id": 18,
+    "xRelativo": 13.945,
+    "yRelativo": 49.34,
+    "nome": "Posição 18"
+  },
+  {
+    "id": 19,
+    "xRelativo": 35.137,
+    "yRelativo": 54.444,
+    "nome": "Posição 19"
+  },
+  {
+    "id": 20,
+    "xRelativo": 45.664,
+    "yRelativo": 51.528,
+    "nome": "Posição 20"
+  },
+  {
+    "id": 21,
+    "xRelativo": 64.531,
+    "yRelativo": 57.118,
+    "nome": "Posição 21"
+  },
+  {
+    "id": 22,
+    "xRelativo": 77.246,
+    "yRelativo": 50.556,
+    "nome": "Posição 22"
+  },
+  {
+    "id": 23,
+    "xRelativo": 89.141,
+    "yRelativo": 56.146,
+    "nome": "Posição 23"
+  },
+  {
+    "id": 24,
+    "xRelativo": 21.328,
+    "yRelativo": 62.951,
+    "nome": "Posição 24"
+  },
+  {
+    "id": 25,
+    "xRelativo": 33.633,
+    "yRelativo": 71.458,
+    "nome": "Posição 25"
+  },
+  {
+    "id": 26,
+    "xRelativo": 44.98,
+    "yRelativo": 72.917,
+    "nome": "Posição 26"
+  },
+  {
+    "id": 27,
+    "xRelativo": 54.141,
+    "yRelativo": 63.194,
+    "nome": "Posição 27"
+  },
+  {
+    "id": 28,
+    "xRelativo": 64.531,
+    "yRelativo": 75.347,
+    "nome": "Posição 28"
+  },
+  {
+    "id": 29,
+    "xRelativo": 75.605,
+    "yRelativo": 76.806,
+    "nome": "Posição 29"
+  },
+  {
+    "id": 30,
+    "xRelativo": 86.953,
+    "yRelativo": 70.972,
+    "nome": "Posição 30"
+  },
+  {
+    "id": 31,
+    "xRelativo": 10.664,
+    "yRelativo": 80.937,
+    "nome": "Posição 31"
+  },
+  {
+    "id": 32,
+    "xRelativo": 23.516,
+    "yRelativo": 81.424,
+    "nome": "Posição 32"
+  },
+  {
+    "id": 33,
+    "xRelativo": 34.863,
+    "yRelativo": 92.847,
+    "nome": "Posição 33"
+  },
+  {
+    "id": 34,
+    "xRelativo": 54.141,
+    "yRelativo": 84.826,
+    "nome": "Posição 34"
+  },
+  {
+    "id": 35,
+    "xRelativo": 67.266,
+    "yRelativo": 92.847,
+    "nome": "Posição 35"
+  },
+  {
+    "id": 36,
+    "xRelativo": 79.98,
+    "yRelativo": 91.632,
+    "nome": "Posição 36"
+  },
+  {
+    "id": 37,
+    "xRelativo": 91.602,
+    "yRelativo": 90.903,
+    "nome": "Posição 37"
+  }
+]</script>
+    <div id="remap-modal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <h2>Remapeamento</h2>
+            <div class="field-row">
+                <label for="map-id">ID</label>
+                <input id="map-id" type="number" min="1" />
+            </div>
+            <div class="field-row">
+                <label for="map-name">Nome</label>
+                <input id="map-name" type="text" placeholder="Ex.: Posição 1" />
+            </div>
+            <div class="field-row">
+                <label for="map-x">X (%)</label>
+                <input id="map-x" type="number" step="0.001" />
+            </div>
+            <div class="field-row">
+                <label for="map-y">Y (%)</label>
+                <input id="map-y" type="number" step="0.001" />
+            </div>
+            <div class="buttons">
+                <button id="map-save">Salvar</button>
+                <button id="map-cancel">Cancelar</button>
+                <button id="map-copy">Copiar JSON</button>
+                <button id="map-download">Baixar JSON</button>
+            </div>
+            <p class="hint">Atalho: pressione M para entrar/sair do remapeamento. Clique no mapa para capturar um ponto.</p>
+        </div>
+    </div>
+    <div id="controls">
+        <p id="status">Posições mapeadas: <span id="total-posicoes">0</span></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
