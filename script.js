@@ -135,26 +135,10 @@ function atualizarContador() {
 function criarMarcador(posicao) {
     const marcador = document.createElement('div');
     marcador.className = 'marcador';
-    marcador.style.position = 'absolute';
     marcador.style.left = posicao.xRelativo + '%';
     marcador.style.top = posicao.yRelativo + '%';
-    marcador.style.transform = 'translate(-50%, -50%)';
-    marcador.style.boxSizing = 'border-box';
-    marcador.style.width = '20px';
-    marcador.style.height = '20px';
-    marcador.style.backgroundColor = '#ffeb3b';
-    marcador.style.border = '2px solid #f57f17';
-    marcador.style.borderRadius = '50%';
-    marcador.style.zIndex = '10';
-    marcador.style.display = 'flex';
-    marcador.style.justifyContent = 'center';
-    marcador.style.alignItems = 'center';
-    marcador.style.fontSize = '10px';
-    marcador.style.fontWeight = 'bold';
-    marcador.style.color = '#000';
-    marcador.style.cursor = 'pointer';
     marcador.textContent = posicao.id;
-    marcador.title = `${posicao.nome} (${posicao.xRelativo + 2}%, ${posicao.yRelativo}%)`;
+    marcador.title = `${posicao.nome} (${posicao.xRelativo.toFixed(1)}%, ${posicao.yRelativo.toFixed(1)}%)`;
     
     document.getElementById('game-container').appendChild(marcador);
 }
@@ -203,6 +187,13 @@ document.addEventListener('DOMContentLoaded', function() {
     carregarPosicoes();
     configurarRemapeamento();
     inicializarScoreboard();
+    
+    // Reposiciona peões quando a janela é redimensionada
+    window.addEventListener('resize', () => {
+        if (equipes.length > 0) {
+            posicionarPeoesIniciais();
+        }
+    });
 });
 
 function configurarRemapeamento() {
@@ -228,11 +219,17 @@ function configurarRemapeamento() {
         const yPercent = ((ev.clientY - rect.top) / rect.height) * 100;
         const xRelativo = Math.round((xPercent + Number.EPSILON) * 1000) / 1000;
         const yRelativo = Math.round((yPercent + Number.EPSILON) * 1000) / 1000;
+        
+        // Salva diretamente sem modal
         const id = posicoesSelecionadas.length + 1;
-        const ponto = { id, xRelativo, yRelativo, nome: `Posição ${id}` };
+        const ponto = { 
+            id, 
+            xRelativo, 
+            yRelativo, 
+            nome: `Posição ${id}` 
+        };
         posicoesSelecionadas.push(ponto);
         atualizarContador();
-        // Exibe marcador imediatamente
         criarMarcador(ponto);
     });
 
@@ -243,14 +240,32 @@ function configurarRemapeamento() {
         const nome = inputName.value || `Posição ${id || posicoesSelecionadas.length + 1}`;
         const xRelativo = Number(inputX.value);
         const yRelativo = Number(inputY.value);
-        if (!Number.isFinite(xRelativo) || !Number.isFinite(yRelativo)) return;
+        
+        // Valida se os valores são números válidos e estão entre 0 e 100
+        if (!Number.isFinite(xRelativo) || !Number.isFinite(yRelativo)) {
+            alert('Por favor, insira valores numéricos válidos para X e Y');
+            return;
+        }
+        
+        if (xRelativo < 0 || xRelativo > 100 || yRelativo < 0 || yRelativo > 100) {
+            alert('Os valores devem estar entre 0% e 100%');
+            return;
+        }
+        
         const existenteIdx = posicoesSelecionadas.findIndex(p => p.id === id);
-        const nova = { id: id || (posicoesSelecionadas.length + 1), xRelativo, yRelativo, nome };
+        const nova = { 
+            id: id || (posicoesSelecionadas.length + 1), 
+            xRelativo: Math.round(xRelativo * 1000) / 1000, // Mantém 3 casas decimais
+            yRelativo: Math.round(yRelativo * 1000) / 1000, // Mantém 3 casas decimais
+            nome 
+        };
+        
         if (existenteIdx >= 0) {
             posicoesSelecionadas[existenteIdx] = nova;
         } else {
             posicoesSelecionadas.push(nova);
         }
+        
         fecharModal();
         atualizarMarcadores();
         atualizarContador();
@@ -278,26 +293,138 @@ function alternarRemap() {
     isRemapMode = !isRemapMode;
     document.body.classList.toggle('remap-active', isRemapMode);
     if (isRemapMode) {
-        // Inicia do zero
-        posicoesSelecionadas = [];
-        atualizarContador();
-        // Remove qualquer marcador existente
-        document.querySelectorAll('.marcador').forEach(m => m.remove());
+        // Pergunta se quer limpar posições existentes
+        if (posicoesSelecionadas.length > 0) {
+            const confirmar = confirm(`Existem ${posicoesSelecionadas.length} posições mapeadas. Deseja começar um novo mapeamento do zero?`);
+            if (confirmar) {
+                posicoesSelecionadas = [];
+                atualizarContador();
+                // Remove qualquer marcador existente
+                document.querySelectorAll('.marcador').forEach(m => m.remove());
+            }
+        }
+        // Mostra instruções
+        alert('🎯 Modo Remapeamento Ativo!\n\n• Clique no mapa para adicionar posições\n• Pressione S para salvar\n• Pressione M para sair');
+    } else {
+        // Sai do modo remapeamento - pergunta se quer salvar
+        if (posicoesSelecionadas.length > 0) {
+            const salvar = confirm(`Salvar ${posicoesSelecionadas.length} posições mapeadas?`);
+            if (salvar) {
+                salvarJsonAtual();
+            }
+        }
     }
     // Fecha modal ao sair
     if (!isRemapMode) fecharModal();
 }
 
 function abrirModal(xPercent, yPercent) {
+    // Limpa os campos e prepara para nova entrada
+    inputId.value = String(posicoesSelecionadas.length + 1);
+    inputName.value = `Posição ${posicoesSelecionadas.length + 1}`;
     inputX.value = String(xPercent);
     inputY.value = String(yPercent);
-    if (!inputId.value) inputId.value = String(posicoesSelecionadas.length + 1);
     remapModal.setAttribute('aria-hidden', 'false');
 }
 
 function fecharModal() {
     remapModal.setAttribute('aria-hidden', 'true');
 }
+
+// Variáveis para o modal de remoção
+let selectedTeamId = null;
+const removeTeamModal = document.getElementById('remove-team-modal');
+const teamList = document.getElementById('team-list');
+const removeConfirmBtn = document.getElementById('remove-confirm');
+const removeCancelBtn = document.getElementById('remove-cancel');
+
+function abrirRemoveTeamModal() {
+    if (equipes.length === 0) {
+        alert('Não há equipes para remover.');
+        return;
+    }
+    
+    selectedTeamId = null;
+    renderTeamList();
+    removeConfirmBtn.disabled = true;
+    removeTeamModal.setAttribute('aria-hidden', 'false');
+}
+
+function renderTeamList() {
+    teamList.innerHTML = '';
+    
+    equipes.forEach((equipe, index) => {
+        const teamItem = document.createElement('div');
+        teamItem.className = 'team-item';
+        teamItem.dataset.teamId = equipe.id;
+        
+        teamItem.innerHTML = `
+            <div class="team-info">
+                <div class="team-color" style="background-color: ${equipe.cor}"></div>
+                <div class="team-details">
+                    <div class="team-name">${equipe.nome}</div>
+                    <div class="team-stats">
+                        <span class="coin-icon">${equipe.moedas} moedas</span>
+                        <span class="day-icon">${equipe.dias} dias</span>
+                    </div>
+                </div>
+            </div>
+            <div class="team-position">Posição ${equipe.pos}</div>
+        `;
+        
+        teamItem.addEventListener('click', () => {
+            // Remove seleção anterior
+            document.querySelectorAll('.team-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Seleciona este item
+            teamItem.classList.add('selected');
+            selectedTeamId = equipe.id;
+            removeConfirmBtn.disabled = false;
+        });
+        
+        teamList.appendChild(teamItem);
+    });
+}
+
+function fecharRemoveTeamModal() {
+    removeTeamModal.setAttribute('aria-hidden', 'true');
+    selectedTeamId = null;
+}
+
+// Event listeners para o modal de remoção
+removeCancelBtn.addEventListener('click', fecharRemoveTeamModal);
+
+removeConfirmBtn.addEventListener('click', () => {
+    if (!selectedTeamId) return;
+    
+    const index = equipes.findIndex(eq => eq.id === selectedTeamId);
+    if (index === -1) return;
+    
+    const equipeRemovida = equipes[index];
+    
+    // Remove peão do mapa
+    const container = document.getElementById('game-container');
+    const peao = container.querySelector(`.peao[data-team="${selectedTeamId}"]`);
+    if (peao) peao.remove();
+    
+    // Remove equipe da lista
+    equipes.splice(index, 1);
+    
+    // Ajusta índice da vez
+    if (indiceEquipeAtual >= equipes.length) indiceEquipeAtual = 0;
+    
+    // Atualiza interface
+    renderScoreboard();
+    destacarEquipeAtual();
+    
+    // Fecha modal
+    fecharRemoveTeamModal();
+    
+    // Mostra confirmação
+    alert(`✅ Equipe "${equipeRemovida.nome}" removida com sucesso!`);
+});
 
 function atualizarMarcadores() {
     // remove antigos
@@ -319,17 +446,29 @@ function salvarJsonAtual() {
     // Tenta copiar para área de transferência também
     const json = JSON.stringify(posicoesSelecionadas, null, 2);
     navigator.clipboard && navigator.clipboard.writeText(json).catch(() => {});
+    
+    // Mostra mensagem de sucesso
+    alert(`✅ ${posicoesSelecionadas.length} posições salvas com sucesso!\n\nArquivo: posicoes-remapeadas.json\nJSON copiado para área de transferência.`);
 }
 
 function posicionarPeoesIniciais() {
     const container = document.getElementById('game-container');
     // remove peões antigos
     container.querySelectorAll('.peao').forEach(p => p.remove());
+    
+    // Calcula offsets responsivos baseados no tamanho da tela
+    const containerWidth = container.offsetWidth;
+    const containerHeight = container.offsetHeight;
+    
+    // Offsets em porcentagem do container (responsivo)
+    // Valores menores para telas pequenas, maiores para telas grandes
+    const baseOffset = Math.min(containerWidth, containerHeight) / 100;
     const offsets = [
-        { dx: -10, dy: -10 },
-        { dx: 10, dy: -10 },
-        { dx: 0, dy: 8 }
+        { dx: -1.5 * baseOffset, dy: -1.5 * baseOffset }, // Esquerda-cima
+        { dx: 1.5 * baseOffset, dy: -1.5 * baseOffset },  // Direita-cima
+        { dx: 0, dy: 1.2 * baseOffset }                   // Centro-baixo
     ];
+    
     equipes.forEach((eq, i) => {
         const casa = posicoesSelecionadas.find(p => p.id === eq.pos);
         if (!casa) return;
@@ -337,8 +476,13 @@ function posicionarPeoesIniciais() {
         peao.className = 'peao';
         peao.dataset.team = eq.id;
         peao.style.backgroundColor = eq.cor;
-        peao.style.left = `calc(${casa.xRelativo}% + ${offsets[i].dx}px)`;
-        peao.style.top = `calc(${casa.yRelativo}% + ${offsets[i].dy}px)`;
+        
+        // Usa os offsets calculados
+        const offsetX = offsets[i]?.dx || 0;
+        const offsetY = offsets[i]?.dy || 0;
+        
+        peao.style.left = `calc(${casa.xRelativo}% + ${offsetX}px)`;
+        peao.style.top = `calc(${casa.yRelativo}% + ${offsetY}px)`;
         container.appendChild(peao);
     });
 }
@@ -369,22 +513,7 @@ function inicializarScoreboard() {
     btnAdd.addEventListener('click', abrirTeamModal);
     const btnRemove = document.createElement('button');
     btnRemove.textContent = 'Remover equipe';
-    btnRemove.addEventListener('click', () => {
-        if (equipes.length === 0) return;
-        const nomes = equipes.map((e, i) => `${i + 1} - ${e.nome}`).join('\n');
-        const sel = prompt(`Qual equipe remover?\n${nomes}`, '1');
-        const idx = Number(sel) - 1;
-        if (!Number.isInteger(idx) || idx < 0 || idx >= equipes.length) return;
-        const idRem = equipes[idx].id;
-        equipes.splice(idx, 1);
-        // Remove peão do mapa
-        const container = document.getElementById('game-container');
-        const peao = container.querySelector(`.peao[data-team="${idRem}"]`);
-        if (peao) peao.remove();
-        if (indiceEquipeAtual >= equipes.length) indiceEquipeAtual = 0;
-        renderScoreboard();
-        destacarEquipeAtual();
-    });
+    btnRemove.addEventListener('click', abrirRemoveTeamModal);
     controls.appendChild(btnAdd);
     controls.appendChild(btnRemove);
     scoreboard.appendChild(controls);

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Jogo de Tabuleiro - Aventura no Mar</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -43,6 +43,19 @@
                 <button id="tm-cancel">Cancelar</button>
             </div>
             <p class="hint">Dica: clique em "Escolher clicando no mapa" e depois em uma marcação numerada.</p>
+        </div>
+    </div>
+    
+    <div id="remove-team-modal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <h2>Remover Equipe</h2>
+            <div id="team-list" class="team-list">
+                <!-- Lista de equipes será gerada dinamicamente -->
+            </div>
+            <div class="buttons">
+                <button id="remove-confirm" class="danger-btn">Confirmar Remoção</button>
+                <button id="remove-cancel">Cancelar</button>
+            </div>
         </div>
     </div>
     <!-- Fallback embutido das posições para exibição imediata -->
@@ -283,11 +296,11 @@
             </div>
             <div class="field-row">
                 <label for="map-x">X (%)</label>
-                <input id="map-x" type="number" step="0.001" />
+                <input id="map-x" type="number" step="0.001" min="0" max="100" placeholder="0.000" />
             </div>
             <div class="field-row">
                 <label for="map-y">Y (%)</label>
-                <input id="map-y" type="number" step="0.001" />
+                <input id="map-y" type="number" step="0.001" min="0" max="100" placeholder="0.000" />
             </div>
             <div class="buttons">
                 <button id="map-save">Salvar</button>
@@ -295,7 +308,7 @@
                 <button id="map-copy">Copiar JSON</button>
                 <button id="map-download">Baixar JSON</button>
             </div>
-            <p class="hint">Atalho: pressione M para entrar/sair do remapeamento. Clique no mapa para capturar um ponto.</p>
+            <p class="hint">Atalho: pressione M para entrar/sair do remapeamento. Clique no mapa para capturar pontos automaticamente. Pressione S para salvar o JSON.</p>
         </div>
     </div>
     <div id="controls">

@@ -3,6 +3,7 @@ body {
     font-family: Arial, sans-serif;
     height: 100vh;
     background-color: #f0f0f0;
+    overflow: hidden;
 }
 
 #game-container {
@@ -10,7 +11,56 @@ body {
     width: 100vw;
     height: 100vh;
     background: url('mapa.png') no-repeat center;
-    background-size: cover;
+    background-size: 100% 100%;
+    background-position: center;
+    overflow: hidden;
+}
+
+/* Garante que a imagem sempre ocupe 100% da tela */
+@media (max-width: 768px) {
+    #game-container {
+        background-size: 100% 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    #game-container {
+        background-size: 100% 100%;
+    }
+}
+
+/* Para telas muito largas, mantém 100% */
+@media (min-width: 1200px) {
+    #game-container {
+        background-size: 100% 100%;
+    }
+}
+
+/* Marcações responsivas */
+.marcador {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: #ffeb3b;
+    border: 2px solid #f57f17;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: #000;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.marcador:hover {
+    background: #fff176;
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 #player {
@@ -37,7 +87,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.1);
     display: none;
     align-items: center;
     justify-content: center;
@@ -49,12 +99,13 @@ body {
 }
 
 .modal-content {
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
     padding: 16px 20px;
     border-radius: 8px;
     width: 90%;
     max-width: 420px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    backdrop-filter: blur(5px);
 }
 
 .modal-content h2 {
@@ -95,6 +146,109 @@ body {
     color: #555;
 }
 
+/* Modal de remoção de equipes */
+.team-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 15px 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.team-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.team-item:last-child {
+    border-bottom: none;
+}
+
+.team-item:hover {
+    background: #f0f0f0;
+}
+
+.team-item.selected {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+}
+
+.team-item .team-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.team-item .team-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.team-item .team-details {
+    flex: 1;
+}
+
+.team-item .team-name {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.team-item .team-stats {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    gap: 10px;
+}
+
+.team-item .team-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.team-item .team-stats .coin-icon::before {
+    content: "🪙";
+    font-size: 10px;
+}
+
+.team-item .team-stats .day-icon::before {
+    content: "📅";
+    font-size: 10px;
+}
+
+.team-item .team-position {
+    font-size: 12px;
+    color: #888;
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.danger-btn {
+    background: #f44336 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.danger-btn:hover {
+    background: #d32f2f !important;
+}
+
+.danger-btn:disabled {
+    background: #ccc !important;
+    cursor: not-allowed !important;
+}
+
 /* Modo remapeamento: apenas o mapa visível */
 .remap-active #player,
 .remap-active #controls {
@@ -105,7 +259,7 @@ body {
     cursor: crosshair;
 }
 
-/* Peões de tabuleiro */
+/* Peões responsivos */
 .peao {
 	position: absolute;
 	width: 24px;
@@ -116,13 +270,14 @@ body {
 	transform: translate(-50%, -50%);
 	box-shadow: 0 2px 6px rgba(0,0,0,0.25);
 	z-index: 20;
+	transition: all 0.3s ease;
 }
 
 .remap-active .peao {
 	display: none !important;
 }
 
-/* Scoreboard */
+/* Scoreboard responsivo */
 #scoreboard {
 	position: fixed;
 	top: 12px;
@@ -134,6 +289,7 @@ body {
 	padding: 10px 12px;
 	z-index: 50;
 	min-width: 260px;
+	max-width: 90vw;
 	resize: both;
 	overflow: auto;
 }
@@ -207,4 +363,240 @@ button {
     padding: 10px 20px;
     margin: 5px;
     cursor: pointer;
+}
+
+/* Media Queries para Responsividade */
+
+/* Tablets (768px e abaixo) */
+@media (max-width: 768px) {
+    .marcador {
+        width: 25px;
+        height: 25px;
+        font-size: 12px;
+        border-width: 1px;
+    }
+    
+    .peao {
+        width: 20px;
+        height: 20px;
+        border-width: 2px;
+    }
+    
+    #scoreboard {
+        min-width: 200px;
+        max-width: 85vw;
+        padding: 8px 10px;
+    }
+    
+    .team-row {
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+    }
+    
+    .pill {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 12px 16px;
+    }
+    
+    .field-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+    
+    .field-row label {
+        font-size: 14px;
+    }
+    
+    .buttons {
+        flex-direction: column;
+    }
+    
+    .buttons button {
+        width: 100%;
+        margin: 2px 0;
+    }
+}
+
+/* Celulares (480px e abaixo) */
+@media (max-width: 480px) {
+    .marcador {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+    
+    .peao {
+        width: 16px;
+        height: 16px;
+        border-width: 1px;
+    }
+    
+    #scoreboard {
+        position: fixed;
+        bottom: 12px;
+        right: 12px;
+        top: auto;
+        min-width: 180px;
+        max-width: 80vw;
+        max-height: 40vh;
+    }
+    
+    .team-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 4px 0;
+    }
+    
+    .team-name {
+        font-size: 14px;
+    }
+    
+    .pill {
+        font-size: 10px;
+        padding: 2px 4px;
+    }
+    
+    .score-controls {
+        flex-direction: column;
+    }
+    
+    .score-controls button {
+        width: 100%;
+        padding: 8px;
+        font-size: 14px;
+    }
+    
+    .modal-content {
+        width: 98%;
+        padding: 10px 12px;
+        margin: 10px;
+    }
+    
+    .modal-content h2 {
+        font-size: 18px;
+    }
+    
+    .field-row input {
+        padding: 10px;
+        font-size: 16px; /* Evita zoom no iOS */
+    }
+    
+    .buttons button {
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+    
+    /* Modal de remoção responsivo */
+    .team-list {
+        max-height: 250px;
+    }
+    
+    .team-item {
+        padding: 10px 12px;
+    }
+    
+    .team-item .team-info {
+        gap: 8px;
+    }
+    
+    .team-item .team-color {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .team-item .team-name {
+        font-size: 13px;
+    }
+    
+    .team-item .team-stats {
+        font-size: 11px;
+        gap: 8px;
+    }
+    
+    .team-item .team-position {
+        font-size: 11px;
+        padding: 1px 4px;
+    }
+}
+
+/* Telas muito pequenas (320px e abaixo) */
+@media (max-width: 320px) {
+    .marcador {
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
+    }
+    
+    .peao {
+        width: 14px;
+        height: 14px;
+    }
+    
+    #scoreboard {
+        min-width: 160px;
+        max-width: 90vw;
+    }
+    
+    .modal-content {
+        width: 100%;
+        margin: 5px;
+        padding: 8px 10px;
+    }
+}
+
+/* Telas grandes (1200px e acima) */
+@media (min-width: 1200px) {
+    .marcador {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+        border-width: 3px;
+    }
+    
+    .peao {
+        width: 28px;
+        height: 28px;
+        border-width: 4px;
+    }
+    
+    #scoreboard {
+        min-width: 300px;
+    }
+    
+    .modal-content {
+        max-width: 500px;
+    }
+}
+
+/* Orientação paisagem em dispositivos móveis */
+@media (max-height: 500px) and (orientation: landscape) {
+    #scoreboard {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        bottom: auto;
+        max-height: 80vh;
+        min-width: 200px;
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Ajustes para telas de alta densidade (retina) */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .marcador {
+        border-width: 1px;
+    }
+    
+    .peao {
+        border-width: 2px;
+    }
 }
