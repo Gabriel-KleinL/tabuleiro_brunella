@@ -530,30 +530,38 @@ function inicializarScoreboard() {
 
     // Drag
     let startX = 0, startY = 0, startLeft = 0, startTop = 0, dragging = false;
-    handle.addEventListener('mousedown', (e) => {
+    
+    // Função para iniciar o drag
+    function startDrag(e) {
         dragging = true;
         scoreboard.classList.add('dragging');
-        startX = e.clientX; startY = e.clientY;
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        startX = clientX; startY = clientY;
         const rect = scoreboard.getBoundingClientRect();
         startLeft = rect.left; startTop = rect.top;
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp, { once: true });
         e.preventDefault();
-    });
+    }
+    
+    // Função para mover
     function onMove(e) {
         if (!dragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        const dx = clientX - startX;
+        const dy = clientY - startY;
         const left = Math.max(0, startLeft + dx);
         const top = Math.max(0, startTop + dy);
         scoreboard.style.left = left + 'px';
         scoreboard.style.top = top + 'px';
         scoreboard.style.right = 'auto';
+        e.preventDefault();
     }
-    function onUp() {
+    
+    // Função para parar o drag
+    function onUp(e) {
         dragging = false;
         scoreboard.classList.remove('dragging');
-        document.removeEventListener('mousemove', onMove);
         const rect = scoreboard.getBoundingClientRect();
         localStorage.setItem('scoreboard@ui', JSON.stringify({
             left: rect.left,
@@ -562,6 +570,16 @@ function inicializarScoreboard() {
             height: rect.height
         }));
     }
+    
+    // Eventos de mouse
+    handle.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    
+    // Eventos de touch para dispositivos móveis
+    handle.addEventListener('touchstart', startDrag, { passive: false });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp);
 
     // Salva tamanho ao terminar de redimensionar (debounce simples)
     let resizeObserver;

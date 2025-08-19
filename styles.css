@@ -3,7 +3,7 @@ body {
     font-family: Arial, sans-serif;
     height: 100vh;
     background-color: #f0f0f0;
-    overflow: hidden;
+    overflow: auto;
 }
 
 #game-container {
@@ -13,7 +13,7 @@ body {
     background: url('mapa.png') no-repeat center;
     background-size: 100% 100%;
     background-position: center;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /* Garante que a imagem sempre ocupe 100% da tela */
@@ -587,6 +587,49 @@ button {
     .modal-content {
         max-height: 90vh;
         overflow-y: auto;
+    }
+}
+
+/* Melhorias para dispositivos móveis */
+@media (max-width: 768px) {
+    /* Garante que o scoreboard seja arrastável no mobile */
+    #scoreboard {
+        touch-action: none;
+        user-select: none;
+    }
+    
+    #scoreboard .handle {
+        touch-action: none;
+        cursor: grab;
+    }
+    
+    #scoreboard.dragging .handle {
+        cursor: grabbing;
+    }
+    
+    /* Melhora a rolagem horizontal */
+    #game-container {
+        min-width: 100vw;
+        min-height: 100vh;
+    }
+}
+
+/* Orientação paisagem específica para mobile */
+@media (orientation: landscape) and (max-width: 768px) {
+    #game-container {
+        min-width: 100vw;
+        min-height: 100vh;
+        overflow: auto;
+    }
+    
+    #scoreboard {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        bottom: auto;
+        max-height: 80vh;
+        min-width: 200px;
+        touch-action: none;
     }
 }
 
