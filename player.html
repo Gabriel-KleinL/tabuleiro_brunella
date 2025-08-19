@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>Jogador - Jogo de Tabuleiro</title>
+    <link rel="stylesheet" href="styles.css?v=1.3">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .player-mode {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            font-weight: bold;
+        }
+        
+        .team-selector {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        
+        .team-selector select {
+            margin-left: 10px;
+            padding: 5px;
+            border-radius: 3px;
+            border: none;
+        }
+        
+        .player-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .player-controls {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+
+        /* Jogador não vê o tabuleiro no modo multiplayer */
+        #game-container { display: none; }
+        /* Esconde o placar/draggable no modo Jogador */
+        #scoreboard { display: none !important; }
+
+        /* Oculta seletor de equipe, informações e controles no modo Jogador simplificado */
+        .team-selector,
+        .player-info,
+        .player-controls,
+        .dice-result,
+        .movement-options { display: none !important; }
+
+        /* Embelezamento da mensagem de espera */
+        .waiting-message {
+            padding: 28px 34px;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.85);
+            box-shadow: 0 18px 38px rgba(0,0,0,0.35);
+        }
+        .waiting-message h2 {
+            font-size: 36px;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .waiting-message p {
+            font-size: 20px;
+            opacity: .9;
+        }
+
+        /* Painel compacto com outras equipes */
+        .teams-panel { display: none !important; }
+        .teams-panel .header {
+            background: linear-gradient(135deg, rgba(102,126,234,0.9) 0%, rgba(118,75,162,0.9) 100%);
+            padding: 10px 14px;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+        .teams-panel .list { max-height: 260px; overflow: auto; }
+        .teams-panel .row {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.15);
+        }
+        .teams-panel .left { display: flex; align-items: center; gap: 8px; }
+        .teams-panel .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255,255,255,0.3) inset; }
+        .teams-panel .name { font-weight: 600; }
+        .teams-panel .stats { font-size: 12px; opacity: .95; display: flex; gap: 8px; }
+        .teams-panel .row.current { background: rgba(0,0,0,0.2); }
+
+        /* Modal com tema roxo */
+        .modal .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.35);
+        }
+        .modal .field-row label { color: #fff; }
+        .modal .field-row input {
+            background: rgba(255,255,255,0.95);
+            color: #222;
+            border: none;
+            border-radius: 8px;
+        }
+        .modal .buttons button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none; border-radius: 10px; padding: 10px 16px;
+        }
+        .modal .buttons button:hover { filter: brightness(1.05); }
+        .modal .buttons #tm-cancel { background: rgba(255,255,255,0.15); }
+        
+        .player-controls button {
+            margin: 5px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .player-controls button:hover {
+            background: #45a049;
+        }
+        
+        .player-controls button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .dice-result {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 2000;
+            text-align: center;
+            font-size: 24px;
+            display: none;
+        }
+        
+        .dice-result.show {
+            display: block;
+        }
+        
+        .movement-options {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 2000;
+            text-align: center;
+            display: none;
+        }
+        
+        .movement-options.show {
+            display: block;
+        }
+        
+        .movement-options button {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #2196F3;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .movement-options button:hover {
+            background: #1976D2;
+        }
+        
+        .waiting-message {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            z-index: 1200;
+            text-align: center;
+            font-size: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+        }
+    </style>
+</head>
+<body>
+    <div class="player-mode">🎮 MODO JOGADOR</div>
+    <div class="teams-panel" id="teams-panel" aria-live="polite" style="display:none;">
+        <div class="header">Equipes na sala</div>
+        <div class="list" id="teams-list"></div>
+    </div>
+
+    <!-- Modal central para escolher destino da rodada -->
+    <div id="choice-modal" class="modal" aria-hidden="true">
+        <div class="modal-content" style="text-align:center; max-width:520px;">
+            <h2 id="choice-title">Escolha seu destino</h2>
+            <div id="choice-buttons" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:10px;"></div>
+            <p class="hint">Você só pode escolher uma vez por rodada. Aguarde as outras equipes.</p>
+        </div>
+    </div>
+
+    <!-- Modal para escolher a sua equipe neste dispositivo -->
+    <div id="team-pick-modal" class="modal" aria-hidden="true">
+        <div class="modal-content" style="text-align:center; max-width:520px;">
+            <h2>Escolha sua equipe</h2>
+            <div id="team-pick-list" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"></div>
+            <p class="hint">Selecione qual equipe você controla neste dispositivo.</p>
+        </div>
+    </div>
+    <div class="team-selector">
+        <label for="team-select">Equipe:</label>
+        <select id="team-select">
+            <option value="">Selecione uma equipe</option>
+        </select>
+    </div>
+    
+    <div id="game-container">
+        <div id="player"></div>
+    </div>
+    <div id="scoreboard" aria-live="polite"></div>
+    
+    <div class="player-info" id="player-info">
+        <h3>Informações da Equipe</h3>
+        <div id="info-content">Selecione uma equipe para começar</div>
+    </div>
+    
+    <div class="player-controls">
+        <h3>Controles</h3>
+        <button id="roll-dice" disabled>🎲 Jogar Dado</button>
+        <button id="end-turn" disabled>✅ Finalizar Turno</button>
+    </div>
+    
+    <div class="dice-result" id="dice-result">
+        <h2>🎲 Resultado do Dado</h2>
+        <div id="dice-number">?</div>
+        <button id="dice-ok">OK</button>
+    </div>
+    
+    <div class="movement-options" id="movement-options">
+        <h2>Escolha seu movimento</h2>
+        <div id="movement-buttons"></div>
+        <button id="movement-cancel">Cancelar</button>
+    </div>
+    
+    <div class="waiting-message" id="waiting-message" style="display: none;">
+        <h2>⏳ Aguardando seu turno...</h2>
+        <p>Você pode jogar quando for sua vez!</p>
+    </div>
+
+    <!-- Modal de nova equipe (mesmo layout do modo 1 tela, sem o botão de escolher no mapa) -->
+    <div id="team-modal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <h2>Nova Equipe</h2>
+            <div class="field-row">
+                <label for="tm-name">Nome</label>
+                <input id="tm-name" type="text" placeholder="Equipe" />
+            </div>
+            <div class="field-row">
+                <label for="tm-coins">Moedas</label>
+                <input id="tm-coins" type="number" value="5" min="0" />
+            </div>
+            <div class="field-row">
+                <label for="tm-days">Dias</label>
+                <input id="tm-days" type="number" value="1" min="0" />
+            </div>
+            <div class="field-row">
+                <label for="tm-casa">Casa inicial</label>
+                <input id="tm-casa" type="number" min="1" max="37" placeholder="Ex.: 1" />
+            </div>
+            <div class="buttons">
+                <!-- Sem botão de escolher no mapa no modo Jogador -->
+                <button id="tm-save">Adicionar</button>
+                <button id="tm-cancel">Cancelar</button>
+            </div>
+            <p class="hint">Dica: peça ao organizador para informar a casa inicial correta.</p>
+        </div>
+    </div>
+
+    <!-- Fallback embutido das posições para exibição imediata -->
+    <script id="posicoes-embed" type="application/json">[
+  {
+    "id": 1,
+    "xRelativo": 5.195,
+    "yRelativo": 14.097,
+    "nome": "Posição 1"
+  },
+  {
+    "id": 2,
+    "xRelativo": 16.406,
+    "yRelativo": 9.236,
+    "nome": "Posição 2"
+  },
+  {
+    "id": 3,
+    "xRelativo": 26.25,
+    "yRelativo": 14.097,
+    "nome": "Posição 3"
+  },
+  {
+    "id": 4,
+    "xRelativo": 35.41,
+    "yRelativo": 26.979,
+    "nome": "Posição 4"
+  },
+  {
+    "id": 5,
+    "xRelativo": 44.297,
+    "yRelativo": 14.826,
+    "nome": "Posição 5"
+  },
+  {
+    "id": 6,
+    "xRelativo": 54.551,
+    "yRelativo": 19.444,
+    "nome": "Posição 6"
+  },
+  {
+    "id": 7,
+    "xRelativo": 65.352,
+    "yRelativo": 12.882,
+    "nome": "Posição 7"
+  },
+  {
+    "id": 8,
+    "xRelativo": 75.605,
+    "yRelativo": 21.632,
+    "nome": "Posição 8"
+  },
+  {
+    "id": 9,
+    "xRelativo": 85.723,
+    "yRelativo": 12.396,
+    "nome": "Posição 9"
+  },
+  {
+    "id": 10,
+    "xRelativo": 92.148,
+    "yRelativo": 26.979,
+    "nome": "Posição 10"
+  },
+  {
+    "id": 11,
+    "xRelativo": 9.57,
+    "yRelativo": 29.167,
+    "nome": "Posição 11"
+  },
+  {
+    "id": 12,
+    "xRelativo": 19.687,
+    "yRelativo": 35.486,
+    "nome": "Posição 12"
+  },
+  {
+    "id": 13,
+    "xRelativo": 29.668,
+    "yRelativo": 40.833,
+    "nome": "Posição 13"
+  },
+  {
+    "id": 14,
+    "xRelativo": 45.391,
+    "yRelativo": 36.215,
+    "nome": "Posição 14"
+  },
+  {
+    "id": 15,
+    "xRelativo": 60.02,
+    "yRelativo": 35.243,
+    "nome": "Posição 15"
+  },
+  {
+    "id": 16,
+    "xRelativo": 69.59,
+    "yRelativo": 41.562,
+    "nome": "Posição 16"
+  },
+  {
+    "id": 17,
+    "xRelativo": 82.988,
+    "yRelativo": 36.215,
+    "nome": "Posição 17"
+  },
+  {
+    "id": 18,
+    "xRelativo": 13.945,
+    "yRelativo": 49.34,
+    "nome": "Posição 18"
+  },
+  {
+    "id": 19,
+    "xRelativo": 35.137,
+    "yRelativo": 54.444,
+    "nome": "Posição 19"
+  },
+  {
+    "id": 20,
+    "xRelativo": 45.664,
+    "yRelativo": 51.528,
+    "nome": "Posição 20"
+  },
+  {
+    "id": 21,
+    "xRelativo": 64.531,
+    "yRelativo": 57.118,
+    "nome": "Posição 21"
+  },
+  {
+    "id": 22,
+    "xRelativo": 77.246,
+    "yRelativo": 50.556,
+    "nome": "Posição 22"
+  },
+  {
+    "id": 23,
+    "xRelativo": 89.141,
+    "yRelativo": 56.146,
+    "nome": "Posição 23"
+  },
+  {
+    "id": 24,
+    "xRelativo": 21.328,
+    "yRelativo": 62.951,
+    "nome": "Posição 24"
+  },
+  {
+    "id": 25,
+    "xRelativo": 33.633,
+    "yRelativo": 71.458,
+    "nome": "Posição 25"
+  },
+  {
+    "id": 26,
+    "xRelativo": 44.98,
+    "yRelativo": 72.917,
+    "nome": "Posição 26"
+  },
+  {
+    "id": 27,
+    "xRelativo": 54.141,
+    "yRelativo": 63.194,
+    "nome": "Posição 27"
+  },
+  {
+    "id": 28,
+    "xRelativo": 64.531,
+    "yRelativo": 75.347,
+    "nome": "Posição 28"
+  },
+  {
+    "id": 29,
+    "xRelativo": 75.605,
+    "yRelativo": 76.806,
+    "nome": "Posição 29"
+  },
+  {
+    "id": 30,
+    "xRelativo": 86.953,
+    "yRelativo": 70.972,
+    "nome": "Posição 30"
+  },
+  {
+    "id": 31,
+    "xRelativo": 10.664,
+    "yRelativo": 80.937,
+    "nome": "Posição 31"
+  },
+  {
+    "id": 32,
+    "xRelativo": 23.516,
+    "yRelativo": 81.424,
+    "nome": "Posição 32"
+  },
+  {
+    "id": 33,
+    "xRelativo": 34.863,
+    "yRelativo": 92.847,
+    "nome": "Posição 33"
+  },
+  {
+    "id": 34,
+    "xRelativo": 54.141,
+    "yRelativo": 84.826,
+    "nome": "Posição 34"
+  },
+  {
+    "id": 35,
+    "xRelativo": 67.266,
+    "yRelativo": 92.847,
+    "nome": "Posição 35"
+  },
+  {
+    "id": 36,
+    "xRelativo": 79.98,
+    "yRelativo": 91.632,
+    "nome": "Posição 36"
+  },
+  {
+    "id": 37,
+    "xRelativo": 91.602,
+    "yRelativo": 90.903,
+    "nome": "Posição 37"
+  }
+]</script>
+
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var sala = params.get('sala');
+            if (!(sala && /^\d{4}$/.test(sala))) {
+                var code = localStorage.getItem('tabuleiro_sala_recente') || '';
+                function norm(v){ return (v || '').replace(/\D/g, '').slice(0, 4); }
+                code = norm(code);
+                while (!/^\d{4}$/.test(code)) {
+                    var entered = window.prompt('Informe o código da sala (4 dígitos):', code || '');
+                    if (entered === null) {
+                        var currentPath = window.location.pathname;
+                        var basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                        window.location.href = basePath + 'menu.html';
+                        return;
+                    }
+                    code = norm(entered);
+                }
+                localStorage.setItem('tabuleiro_sala_recente', code);
+                params.set('sala', code);
+                window.location.search = params.toString();
+            }
+        })();
+    </script>
+    <script src="player.js?v=1.0"></script>
+</body>
+</html>

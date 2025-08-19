@@ -3,61 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>Jogo de Tabuleiro - Aventura no Mar</title>
+    <title>Visualizador - Jogo de Tabuleiro</title>
     <link rel="stylesheet" href="styles.css?v=1.3">
+    <style>
+        .viewer-mode {
+            display: none; /* Oculta etiqueta de modo visualizador */
+        }
+        
+        .current-team {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            font-weight: bold;
+        }
+        
+        .game-status { display: none; } /* Remove status do jogo */
+        
+        .controls-viewer { display: none; } /* Remove controles */
+
+        /* Numeração das casas no viewer */
+        .numero-casa {
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform: translate(-50%, -50%);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.92);
+            border: 2px solid rgba(0,0,0,0.2);
+            color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 6;
+        }
+        @media (max-width: 768px) {
+            .numero-casa { width: 24px; height: 24px; font-size: 12px; }
+        }
+
+        /* Botão de reset dentro do placar */
+        #scoreboard .score-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        #scoreboard .score-header h3 { margin: 0; }
+        #scoreboard .reset-btn {
+            background: linear-gradient(135deg, #e53935 0%, #ff7043 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 6px 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        #scoreboard .reset-btn:hover { filter: brightness(1.05); }
+
+        /* Sugestões de movimento (sem turnos) */
+        .sugestao-mov {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.75);
+            border: 3px solid #000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            pointer-events: none;
+            z-index: 7;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; color: #111;
+        }
+        .sugestao-mov .tag { position: absolute; top: -14px; background: rgba(0,0,0,0.6); color:#fff; padding: 1px 4px; border-radius: 6px; font-size: 10px; }
+        
+        .controls-viewer button {
+            margin: 5px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .controls-viewer button:hover {
+            background: #45a049;
+        }
+        
+        .controls-viewer button.danger {
+            background: #f44336;
+        }
+        
+        .controls-viewer button.danger:hover {
+            background: #da190b;
+        }
+    </style>
 </head>
 <body>
+    <div class="viewer-mode">📺</div>
+    <div class="current-team" id="current-team">Aguardando...</div>
+    
     <div id="game-container">
         <div id="player"></div>
     </div>
     <div id="scoreboard" aria-live="polite"></div>
-    <div id="action-modal" class="modal" aria-hidden="true">
-        <div class="modal-content">
-            <h2 id="action-title">Ação</h2>
-            <div id="action-body"></div>
-            <div class="buttons" id="action-buttons"></div>
-        </div>
-    </div>
-    <div id="team-modal" class="modal" aria-hidden="true">
-        <div class="modal-content">
-            <h2>Nova Equipe</h2>
-            <div class="field-row">
-                <label for="tm-name">Nome</label>
-                <input id="tm-name" type="text" placeholder="Equipe" />
-            </div>
-            <div class="field-row">
-                <label for="tm-coins">Moedas</label>
-                <input id="tm-coins" type="number" value="5" min="0" />
-            </div>
-            <div class="field-row">
-                <label for="tm-days">Dias</label>
-                <input id="tm-days" type="number" value="1" min="0" />
-            </div>
-            <div class="field-row">
-                <label for="tm-casa">Casa inicial</label>
-                <input id="tm-casa" type="number" min="1" max="37" placeholder="Ex.: 1" />
-            </div>
-            <div class="buttons">
-                <button id="tm-pick">Escolher clicando no mapa</button>
-                <button id="tm-save">Adicionar</button>
-                <button id="tm-cancel">Cancelar</button>
-            </div>
-            <p class="hint">Dica: clique em "Escolher clicando no mapa" e depois em uma marcação numerada.</p>
+
+    <!-- Overlay de início de partida -->
+    <div id="start-overlay" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1000;">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px 28px;text-align:center;max-width:420px;width:90%">
+            <h2 style="margin:0 0 12px 0">Começar partida</h2>
+            <p style="margin:0 0 18px 0;color:#555">Clique para liberar o tabuleiro para os jogadores. Todos os dispositivos desta sala serão sincronizados.</p>
+            <button id="start-game" style="background:linear-gradient(135deg,#667eea 0%, #764ba2 100%);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer">Começar</button>
         </div>
     </div>
     
-    <div id="remove-team-modal" class="modal" aria-hidden="true">
-        <div class="modal-content">
-            <h2>Remover Equipe</h2>
-            <div id="team-list" class="team-list">
-                <!-- Lista de equipes será gerada dinamicamente -->
-            </div>
-            <div class="buttons">
-                <button id="remove-confirm" class="danger-btn">Confirmar Remoção</button>
-                <button id="remove-cancel">Cancelar</button>
-            </div>
-        </div>
-    </div>
+    
+    <div class="game-status" id="game-status" aria-hidden="true"></div>
+    
+    <div class="controls-viewer" aria-hidden="true"></div>
+
     <!-- Fallback embutido das posições para exibição imediata -->
     <script id="posicoes-embed" type="application/json">[
   {
@@ -283,37 +351,6 @@
     "nome": "Posição 37"
   }
 ]</script>
-    <div id="remap-modal" class="modal" aria-hidden="true">
-        <div class="modal-content">
-            <h2>Remapeamento</h2>
-            <div class="field-row">
-                <label for="map-id">ID</label>
-                <input id="map-id" type="number" min="1" />
-            </div>
-            <div class="field-row">
-                <label for="map-name">Nome</label>
-                <input id="map-name" type="text" placeholder="Ex.: Posição 1" />
-            </div>
-            <div class="field-row">
-                <label for="map-x">X (%)</label>
-                <input id="map-x" type="number" step="0.001" min="0" max="100" placeholder="0.000" />
-            </div>
-            <div class="field-row">
-                <label for="map-y">Y (%)</label>
-                <input id="map-y" type="number" step="0.001" min="0" max="100" placeholder="0.000" />
-            </div>
-            <div class="buttons">
-                <button id="map-save">Salvar</button>
-                <button id="map-cancel">Cancelar</button>
-                <button id="map-copy">Copiar JSON</button>
-                <button id="map-download">Baixar JSON</button>
-            </div>
-            <p class="hint">Atalho: pressione M para entrar/sair do remapeamento. Clique no mapa para capturar pontos automaticamente. Pressione S para salvar o JSON.</p>
-        </div>
-    </div>
-    <div id="controls">
-        <p id="status">Posições mapeadas: <span id="total-posicoes">0</span></p>
-    </div>
 
     <script>
         (function () {
@@ -339,6 +376,6 @@
             }
         })();
     </script>
-    <script src="script.js?v=1.3"></script>
+    <script src="viewer.js?v=1.0"></script>
 </body>
 </html>

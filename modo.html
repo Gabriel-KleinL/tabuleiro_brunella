@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecionar Modo - Jogo de Tabuleiro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 700px;
+            width: 92%;
+        }
+        h1 { font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #666; margin-bottom: 30px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: left;
+            cursor: pointer;
+            transition: transform .2s ease, box-shadow .2s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,.12);
+            border: none;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 16px 28px rgba(0,0,0,.18); }
+        .card h3 { font-size: 1.4em; margin-bottom: 8px; }
+        .card p { opacity: .95; line-height: 1.5; }
+        .hint { margin-top: 24px; background: #f8f9fa; padding: 14px; border-radius: 10px; color: #555; }
+        .icon { font-size: 1.8em; margin-right: 8px; }
+        .header-icon { font-size: 1.6em; margin-right: 6px; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        function irUmDispositivo() {
+            // Usa sala fixa para modo local e evita prompt
+            window.location.href = 'index.html?sala=0000';
+        }
+        function irVariosDispositivos() {
+            window.location.href = 'menu.html';
+        }
+    </script>
+    <meta name="color-scheme" content="light only">
+    <meta name="theme-color" content="#667eea">
+</head>
+<body>
+    <div class="container">
+        <h1><span class="header-icon">🎮</span>Jogo de Tabuleiro</h1>
+        <p class="subtitle">Escolha como deseja jogar</p>
+
+        <div class="grid">
+            <button class="card" onclick="irUmDispositivo()" aria-label="Modo 1 Dispositivo">
+                <h3><span class="icon">🖥️</span>1 Dispositivo</h3>
+                <p>Jogue tudo neste dispositivo. Ideal para usar apenas a tela do Administrador com o tabuleiro e controlar os turnos aqui.</p>
+            </button>
+
+            <button class="card" onclick="irVariosDispositivos()" aria-label="Modo Vários Dispositivos">
+                <h3><span class="icon">🖥️📱</span>Vários Dispositivos</h3>
+                <p>Cada equipe em seu aparelho e um Visualizador em tela grande. Você poderá criar uma sala com código de 4 dígitos e abrir as telas.</p>
+            </button>
+        </div>
+
+        <div class="hint">
+            Dica: você pode voltar a esta tela a qualquer momento abrindo <strong>modo.html</strong>.
+        </div>
+    </div>
+</body>
+</html>
+
+

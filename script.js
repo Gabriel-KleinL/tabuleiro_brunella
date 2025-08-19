@@ -1,5 +1,12 @@
 const player = document.getElementById('player');
 const status = document.getElementById('status');
+// Sala (room) handling: permite múltiplas partidas simultâneas por código de 4 dígitos
+const salaParam = new URLSearchParams(window.location.search).get('sala');
+const salaCodigo = (salaParam && /^\d{4}$/.test(salaParam))
+    ? salaParam
+    : (localStorage.getItem('tabuleiro_sala_recente') || '0000');
+localStorage.setItem('tabuleiro_sala_recente', salaCodigo);
+const STORAGE_KEY = `tabuleiro_estado@sala:${salaCodigo}`;
 let posX = 45;
 let posY = 45;
 
@@ -22,6 +29,9 @@ let indiceEquipeAtual = 0;
 let turnoEmResolucao = false;
 let equipeRemovidaNoTurno = false;
 let jogoEncerrado = false;
+let jogoIniciado = false;
+let rodada = 1;
+let propostas = {};
 
 // Grafo de movimentos permitidos
 const caminhos = new Map([
@@ -182,11 +192,26 @@ async function carregarPosicoes() {
     destacarEquipeAtual();
 }
 
+// Função para abrir o modo multiplayer
+function abrirModoMultiplayer() {
+    // Abre o menu de multiplayer em uma nova janela
+    const currentPath = window.location.pathname;
+    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+    const menuUrl = window.location.origin + basePath + 'menu.html';
+    window.open(menuUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+}
+
 // Carregar posições ao iniciar
 document.addEventListener('DOMContentLoaded', function() {
+    carregarEstado();
     carregarPosicoes();
     configurarRemapeamento();
     inicializarScoreboard();
+    
+    // Salvar estado inicial
+    salvarEstado();
+    
+
     
     // Reposiciona peões quando a janela é redimensionada
     window.addEventListener('resize', () => {
@@ -514,6 +539,36 @@ function inicializarScoreboard() {
     const btnRemove = document.createElement('button');
     btnRemove.textContent = 'Remover equipe';
     btnRemove.addEventListener('click', abrirRemoveTeamModal);
+    // Só mostra o botão de Multiplayer quando NÃO estiver no modo 1 Dispositivo (sala 0000)
+    if (salaCodigo !== '0000') {
+        // Botão para abrir o Visualizador na mesma sala
+        const btnViewer = document.createElement('button');
+        btnViewer.textContent = '📺 Visualizador';
+        btnViewer.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        btnViewer.style.color = 'white';
+        btnViewer.style.border = 'none';
+        btnViewer.style.borderRadius = '15px';
+        btnViewer.style.fontWeight = 'bold';
+        btnViewer.addEventListener('click', () => {
+            const url = `viewer.html?sala=${encodeURIComponent(salaCodigo)}`;
+            window.open(url, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+        });
+        controls.appendChild(btnViewer);
+
+        // Botão para abrir o Jogador na mesma sala
+        const btnPlayer = document.createElement('button');
+        btnPlayer.textContent = '🎯 Jogador';
+        btnPlayer.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        btnPlayer.style.color = 'white';
+        btnPlayer.style.border = 'none';
+        btnPlayer.style.borderRadius = '15px';
+        btnPlayer.style.fontWeight = 'bold';
+        btnPlayer.addEventListener('click', () => {
+            const url = `player.html?sala=${encodeURIComponent(salaCodigo)}`;
+            window.open(url, '_blank', 'width=800,height=700,scrollbars=yes,resizable=yes');
+        });
+        controls.appendChild(btnPlayer);
+    }
     controls.appendChild(btnAdd);
     controls.appendChild(btnRemove);
     scoreboard.appendChild(controls);
@@ -638,6 +693,7 @@ function avancarParaProximaEquipe() {
     // todas chegaram
     jogoEncerrado = true;
     destacarEquipeAtual();
+    salvarEstado();
     openActionModal('Fim do jogo', 'Todas as equipes chegaram ao destino!', [{ label: 'OK', value: true }]);
 }
 
@@ -655,6 +711,7 @@ document.getElementById('game-container').addEventListener('click', (ev) => {
         return;
     }
     if (isRemapMode) return; // remapeando, ignorar
+    if (!jogoIniciado) return; // aguardando visualizador iniciar
     if (turnoEmResolucao) return; // impede múltiplas ações no mesmo turno
     if (jogoEncerrado) return; // jogo terminou
     if (equipes.length === 0) return; // sem equipes
@@ -678,6 +735,7 @@ document.getElementById('game-container').addEventListener('click', (ev) => {
         avancarParaProximaEquipe();
         renderScoreboard();
         turnoEmResolucao = false;
+        salvarEstado();
     }).catch(() => { turnoEmResolucao = false; });
 });
 
@@ -782,6 +840,7 @@ tmSave && tmSave.addEventListener('click', () => {
     fecharTeamModal();
     renderScoreboard();
     posicionarPeoesIniciais();
+    salvarEstado();
 });
 
 // Detectar cor da casa
@@ -982,5 +1041,43 @@ async function aplicarRegraDaCasa(casaId) {
                 }
             }
         }
+    }
+}
+
+// Função para salvar estado no localStorage
+function salvarEstado() {
+    try {
+        const estado = {
+            equipes,
+            indiceEquipeAtual,
+            turnoEmResolucao,
+            jogoEncerrado,
+            jogoIniciado,
+            rodada,
+            propostas,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+    } catch (e) {
+        console.error('Erro ao salvar estado:', e);
+    }
+}
+
+// Função para carregar estado do localStorage
+function carregarEstado() {
+    try {
+        const estadoSalvo = localStorage.getItem(STORAGE_KEY);
+        if (estadoSalvo) {
+            const estado = JSON.parse(estadoSalvo);
+            equipes = estado.equipes || [];
+            indiceEquipeAtual = estado.indiceEquipeAtual || 0;
+            turnoEmResolucao = estado.turnoEmResolucao || false;
+            jogoEncerrado = estado.jogoEncerrado || false;
+            jogoIniciado = !!estado.jogoIniciado;
+            rodada = estado.rodada || 1;
+            propostas = estado.propostas || {};
+        }
+    } catch (e) {
+        console.error('Erro ao carregar estado:', e);
     }
 }

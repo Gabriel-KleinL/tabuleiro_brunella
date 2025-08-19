@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Jogo de Tabuleiro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .menu-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .menu-item h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .menu-item p {
+            font-size: 0.9em;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .status {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #1976d2;
+        }
+        
+        .status strong {
+            color: #0d47a1;
+        }
+
+        .room-box {
+            background: #fff;
+            border: 2px dashed #764ba2;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .room-box h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .room-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .room-code {
+            font-size: 1.6em;
+            letter-spacing: 6px;
+            width: 140px;
+            text-align: center;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 2px solid #764ba2;
+            outline: none;
+        }
+        .room-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+        .room-btn.secondary {
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Jogo de Tabuleiro</h1>
+        <p class="subtitle">Sistema Multiplayer - Escolha sua tela</p>
+        <div class="room-box">
+            <h3>🔐 Sala</h3>
+            <p>Use um código de 4 dígitos para criar/entrar em uma sala.</p>
+            <div class="room-actions">
+                <input id="room-code" class="room-code" type="text" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Código da sala" />
+                <button id="room-generate" class="room-btn secondary" title="Gerar código aleatório">Gerar</button>
+                <button id="go-viewer" class="room-btn" title="Abrir como Visualizador">Visualizador</button>
+                <button id="go-player" class="room-btn" title="Abrir como Jogador">Jogador</button>
+            </div>
+        </div>
+        
+        <div class="menu-grid">
+            <a href="#" id="link-viewer" class="menu-item">
+                <span class="icon">📺</span>
+                <h3>Visualizador</h3>
+                <p>Mostra o tabuleiro para todos verem. Controle o fluxo do jogo e gerencie os turnos.</p>
+            </a>
+            
+            <a href="#" id="link-player" class="menu-item">
+                <span class="icon">🎯</span>
+                <h3>Jogador</h3>
+                <p>Para cada equipe fazer suas jogadas. Selecione sua equipe e jogue seu turno.</p>
+            </a>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Como usar:</h3>
+            <ol>
+                <li><strong>Visualizador:</strong> Abra em uma tela grande para todos verem</li>
+                <li><strong>Jogador:</strong> Abra uma tela para cada equipe participante</li>
+                <li>Todas as telas se sincronizam automaticamente!</li>
+            </ol>
+        </div>
+        
+        <div class="status">
+            <strong>💡 Dica:</strong> Para melhor experiência, abra cada tela em uma aba separada do navegador.
+        </div>
+    </div>
+    <script>
+        const codeInput = document.getElementById('room-code');
+        const btnGen = document.getElementById('room-generate');
+        const btnViewer = document.getElementById('go-viewer');
+        const btnPlayer = document.getElementById('go-player');
+        const linkViewer = document.getElementById('link-viewer');
+        const linkPlayer = document.getElementById('link-player');
+
+        function gerarCodigo() {
+            return String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+        }
+        function normalizarCodigo(v) {
+            return (v || '').replace(/\D/g, '').slice(0, 4);
+        }
+        function validarCodigo(v) {
+            return /^\d{4}$/.test(v);
+        }
+        function abrir(pagina) {
+            const cod = normalizarCodigo(codeInput.value);
+            if (!validarCodigo(cod)) {
+                alert('Informe um código de 4 dígitos.');
+                codeInput.focus();
+                return;
+            }
+            let url = pagina + '?sala=' + encodeURIComponent(cod);
+            if (pagina === 'player.html') {
+                url += '&novo=1';
+            }
+            window.open(url, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+        }
+        function setCode(v) {
+            codeInput.value = v;
+            localStorage.setItem('tabuleiro_sala_recente', v);
+        }
+
+        // Prefill com último usado ou aleatório
+        const recente = localStorage.getItem('tabuleiro_sala_recente');
+        setCode(validarCodigo(recente) ? recente : gerarCodigo());
+
+        // Restringe entrada a números
+        codeInput.addEventListener('input', () => setCode(normalizarCodigo(codeInput.value)));
+        btnGen.addEventListener('click', () => setCode(gerarCodigo()));
+
+        // Botões principais
+        btnViewer.addEventListener('click', () => abrir('viewer.html'));
+        btnPlayer.addEventListener('click', () => abrir('player.html'));
+
+        // Cartões também respeitam o código
+        linkViewer.addEventListener('click', (e) => { e.preventDefault(); abrir('viewer.html'); });
+        linkPlayer.addEventListener('click', (e) => { e.preventDefault(); abrir('player.html'); });
+    </script>
+</body>
+</html>

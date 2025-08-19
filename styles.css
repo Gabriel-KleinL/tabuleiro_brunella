@@ -508,6 +508,9 @@ button {
         width: 14px;
         height: 14px;
     }
+}
+
+
     
     .team-item .team-name {
         font-size: 13px;
@@ -522,7 +525,7 @@ button {
         font-size: 11px;
         padding: 1px 4px;
     }
-}
+
 
 /* Telas muito pequenas (320px e abaixo) */
 @media (max-width: 320px) {
